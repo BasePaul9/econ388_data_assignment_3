@@ -1,0 +1,1193 @@
+---------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\pem29\Box\ECON 388\Data Assignment 3\Data_Assignment_3.log
+  log type:  text
+ opened on:   6 Dec 2024, 11:46:09
+
+. 
+. // Data wrangling for tech progress data
+. use chat.dta
+
+. 
+. gen country = country_name, after(country_name)
+
+. replace country = "Bosnia and Herzegovina" if country == "Bosnia-Herzegovina"
+(259 real changes made)
+
+. replace country = "Republic of Korea" if country == "South Korea"
+(259 real changes made)
+
+. replace country = "Myanmar" if country == "Burma"
+(259 real changes made)
+
+. 
+. keep country year ag_tractor atm computer newspaper transplant_kidney vehicle_car
+
+. 
+. save NBER_data, replace
+file NBER_data.dta saved
+
+. clear
+
+. 
+. // Data wrangling for GDP data
+. use pwt1001.dta
+
+. 
+. replace country = "Bolivia" if country == "Bolivia (Plurinational State of)"
+(70 real changes made)
+
+. replace country = "Democratic Republic of the Congo" if country == "D.R. of the Congo"
+(70 real changes made)
+
+. replace country = "Hong Kong" if country == "China, Hong Kong SAR"
+(70 real changes made)
+
+. replace country = "Iran" if country == "Iran (Islamic Republic of)"
+(70 real changes made)
+
+. replace country = "Laos" if country == "Lao People's DR"
+(70 real changes made)
+
+. replace country = "Moldova" if country == "Republic of Moldova"
+(70 real changes made)
+
+. replace country = "Russia" if country == "Russian Federation"
+(70 real changes made)
+
+. replace country = "Slovak Republic" if country == "Slovakia"
+(70 real changes made)
+
+. replace country = "Syria" if country == "Syrian Arab Republic"
+(70 real changes made)
+
+. replace country = "Venezuela" if country == "Venezuela (Bolivarian Republic of)"
+(70 real changes made)
+
+. replace country = "Vietnam" if country == "Viet Nam"
+(70 real changes made)
+
+. 
+. keep country year rgdpe pop emp avh pl_c xr csh_g
+
+. drop if year < 1970
+(3,660 observations deleted)
+
+. drop if year > 1999
+(3,660 observations deleted)
+
+. 
+. gen gdp_per_cap = (rgdpe/pop), after(pop)
+(539 missing values generated)
+
+. replace emp = emp/pop
+(4,432 real changes made)
+
+. 
+. // Merge datasets
+. merge 1:1 country year using NBER_data
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                        38,609
+        from master                     1,200  (_merge==1)
+        from using                     37,409  (_merge==2)
+
+    Matched                             4,290  (_merge==3)
+    -----------------------------------------
+
+. tab _m
+
+   Matching result from |
+                  merge |      Freq.     Percent        Cum.
+------------------------+-----------------------------------
+        Master only (1) |      1,200        2.80        2.80
+         Using only (2) |     37,409       87.20       90.00
+            Matched (3) |      4,290       10.00      100.00
+------------------------+-----------------------------------
+                  Total |     42,899      100.00
+
+. drop if _m != 3
+(38,609 observations deleted)
+
+. drop _m
+
+. 
+. //Expand values
+. reshape wide rgdpe pop gdp_per_cap emp avh pl_c xr csh_g ag_tractor atm computer newspaper transplant_k
+> idney vehicle_car, i(country) j(year)
+(j = 1970 1971 1972 1973 1974 1975 1976 1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 1987 1988 1989 
+> 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999)
+
+Data                               Long   ->   Wide
+-----------------------------------------------------------------------------
+Number of observations            4,290   ->   143         
+Number of variables                  16   ->   421         
+j variable (30 values)             year   ->   (dropped)
+xij variables:
+                                  rgdpe   ->   rgdpe1970 rgdpe1971 ... rgdpe1999
+                                    pop   ->   pop1970 pop1971 ... pop1999
+                            gdp_per_cap   ->   gdp_per_cap1970 gdp_per_cap1971 ... gdp_per_cap1999
+                                    emp   ->   emp1970 emp1971 ... emp1999
+                                    avh   ->   avh1970 avh1971 ... avh1999
+                                   pl_c   ->   pl_c1970 pl_c1971 ... pl_c1999
+                                     xr   ->   xr1970 xr1971 ... xr1999
+                                  csh_g   ->   csh_g1970 csh_g1971 ... csh_g1999
+                             ag_tractor   ->   ag_tractor1970 ag_tractor1971 ... ag_tractor1999
+                                    atm   ->   atm1970 atm1971 ... atm1999
+                               computer   ->   computer1970 computer1971 ... computer1999
+                              newspaper   ->   newspaper1970 newspaper1971 ... newspaper1999
+                      transplant_kidney   ->   transplant_kidney1970 transplant_kidney1971 ... transplant
+> _kidney1999
+                            vehicle_car   ->   vehicle_car1970 vehicle_car1971 ... vehicle_car1999
+-----------------------------------------------------------------------------
+
+. 
+. // Generate growth rates
+. forvalues i = 1970/1998 {
+  2.         local j = `i' + 1
+  3.         gen rgdpe_growth`i' = ((rgdpe`j' / rgdpe`i') - 1) * 100
+  4.         gen pop_growth`i' = ((pop`j' / pop`i') - 1) * 100
+  5.         gen gdp_per_cap_growth`i' = ((gdp_per_cap`j' / gdp_per_cap`i') - 1) * 100
+  6.         gen emp_growth`i' = ((emp`j' / emp`i') - 1) * 100
+  7.         gen avh_growth`i' = ((avh`j' / avh`i') - 1) * 100
+  8.         gen pl_c_growth`i' = ((pl_c`j' / pl_c`i') - 1) * 100
+  9.         gen xr_growth`i' = ((xr`j' / xr`i') - 1) * 100
+ 10.         gen csh_g_growth`i' = ((csh_g`j' / csh_g`i') - 1) * 100
+ 11.         gen ag_tractor_growth`i' = ((ag_tractor`j' / ag_tractor`i') - 1) * 100
+ 12.         gen atm_growth`i' = ((atm`j' / atm`i') - 1) * 100
+ 13.         gen computer_growth`i' = ((computer`j' / computer`i') - 1) * 100
+ 14.         gen newspaper_growth`i' = ((newspaper`j' / newspaper`i') - 1) * 100
+ 15.         gen transplant_kidney_growth`i' = ((transplant_kidney`j' / transplant_kidney`i') - 1) * 100
+ 16.         gen vehicle_car_growth`i' = ((vehicle_car`j' / vehicle_car`i') - 1) * 100
+ 17. }
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(43 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(43 missing values generated)
+(126 missing values generated)
+(46 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(43 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(42 missing values generated)
+(124 missing values generated)
+(47 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(43 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(40 missing values generated)
+(123 missing values generated)
+(48 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(42 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(40 missing values generated)
+(122 missing values generated)
+(47 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(42 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(37 missing values generated)
+(121 missing values generated)
+(49 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(41 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(31 missing values generated)
+(120 missing values generated)
+(50 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(41 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(30 missing values generated)
+(120 missing values generated)
+(49 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(40 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(29 missing values generated)
+(122 missing values generated)
+(51 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(40 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(28 missing values generated)
+(122 missing values generated)
+(48 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(40 missing values generated)
+(98 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(143 missing values generated)
+(28 missing values generated)
+(121 missing values generated)
+(45 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(97 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(142 missing values generated)
+(28 missing values generated)
+(120 missing values generated)
+(47 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(96 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(140 missing values generated)
+(27 missing values generated)
+(119 missing values generated)
+(47 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(96 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(140 missing values generated)
+(27 missing values generated)
+(118 missing values generated)
+(47 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(96 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(139 missing values generated)
+(26 missing values generated)
+(118 missing values generated)
+(47 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(96 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(139 missing values generated)
+(26 missing values generated)
+(119 missing values generated)
+(48 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(96 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(137 missing values generated)
+(27 missing values generated)
+(118 missing values generated)
+(49 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(96 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(136 missing values generated)
+(27 missing values generated)
+(118 missing values generated)
+(52 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(95 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(143 missing values generated)
+(135 missing values generated)
+(27 missing values generated)
+(118 missing values generated)
+(54 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(95 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(23 missing values generated)
+(24 missing values generated)
+(135 missing values generated)
+(102 missing values generated)
+(27 missing values generated)
+(117 missing values generated)
+(53 missing values generated)
+(22 missing values generated)
+(22 missing values generated)
+(22 missing values generated)
+(22 missing values generated)
+(95 missing values generated)
+(22 missing values generated)
+(22 missing values generated)
+(22 missing values generated)
+(24 missing values generated)
+(133 missing values generated)
+(102 missing values generated)
+(28 missing values generated)
+(118 missing values generated)
+(53 missing values generated)
+(92 missing values generated)
+(24 missing values generated)
+(127 missing values generated)
+(89 missing values generated)
+(28 missing values generated)
+(116 missing values generated)
+(28 missing values generated)
+(92 missing values generated)
+(24 missing values generated)
+(126 missing values generated)
+(83 missing values generated)
+(23 missing values generated)
+(116 missing values generated)
+(29 missing values generated)
+(91 missing values generated)
+(7 missing values generated)
+(126 missing values generated)
+(79 missing values generated)
+(23 missing values generated)
+(114 missing values generated)
+(35 missing values generated)
+(89 missing values generated)
+(5 missing values generated)
+(124 missing values generated)
+(72 missing values generated)
+(20 missing values generated)
+(114 missing values generated)
+(48 missing values generated)
+(89 missing values generated)
+(5 missing values generated)
+(124 missing values generated)
+(61 missing values generated)
+(19 missing values generated)
+(114 missing values generated)
+(45 missing values generated)
+(80 missing values generated)
+(5 missing values generated)
+(124 missing values generated)
+(49 missing values generated)
+(19 missing values generated)
+(114 missing values generated)
+(46 missing values generated)
+(80 missing values generated)
+(5 missing values generated)
+(111 missing values generated)
+(41 missing values generated)
+(22 missing values generated)
+(116 missing values generated)
+(63 missing values generated)
+(80 missing values generated)
+(5 missing values generated)
+(110 missing values generated)
+(35 missing values generated)
+(22 missing values generated)
+(117 missing values generated)
+(88 missing values generated)
+(80 missing values generated)
+(5 missing values generated)
+(111 missing values generated)
+(26 missing values generated)
+(22 missing values generated)
+(117 missing values generated)
+(99 missing values generated)
+
+. 
+. // Contract values into long form
+. reshape long rgdpe rgdpe_growth pop pop_growth gdp_per_cap gdp_per_cap_growth emp avh pl_c xr csh_g emp
+> _growth avh_growth pl_c_growth xr_growth csh_g_growth ag_tractor ag_tractor_growth atm atm_growth compu
+> ter computer_growth newspaper newspaper_growth transplant_kidney transplant_kidney_growth vehicle_car v
+> ehicle_car_growth, i(country) j(year)
+(j = 1970 1971 1972 1973 1974 1975 1976 1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 1987 1988 1989 
+> 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999)
+(variable rgdpe_growth1999 not found)
+(variable pop_growth1999 not found)
+(variable gdp_per_cap_growth1999 not found)
+(variable emp_growth1999 not found)
+(variable avh_growth1999 not found)
+(variable pl_c_growth1999 not found)
+(variable xr_growth1999 not found)
+(variable csh_g_growth1999 not found)
+(variable ag_tractor_growth1999 not found)
+(variable atm_growth1999 not found)
+(variable computer_growth1999 not found)
+(variable newspaper_growth1999 not found)
+(variable transplant_kidney_growth1999 not found)
+(variable vehicle_car_growth1999 not found)
+
+Data                               Wide   ->   Long
+-----------------------------------------------------------------------------
+Number of observations              143   ->   4,290       
+Number of variables                 827   ->   30          
+j variable (30 values)                    ->   year
+xij variables:
+      rgdpe1970 rgdpe1971 ... rgdpe1999   ->   rgdpe
+rgdpe_growth1970 rgdpe_growth1971 ... rgdpe_growth1999->rgdpe_growth
+            pop1970 pop1971 ... pop1999   ->   pop
+pop_growth1970 pop_growth1971 ... pop_growth1999->pop_growth
+gdp_per_cap1970 gdp_per_cap1971 ... gdp_per_cap1999->gdp_per_cap
+gdp_per_cap_growth1970 gdp_per_cap_growth1971 ... gdp_per_cap_growth1999->gdp_per_cap_growth
+            emp1970 emp1971 ... emp1999   ->   emp
+            avh1970 avh1971 ... avh1999   ->   avh
+         pl_c1970 pl_c1971 ... pl_c1999   ->   pl_c
+               xr1970 xr1971 ... xr1999   ->   xr
+      csh_g1970 csh_g1971 ... csh_g1999   ->   csh_g
+emp_growth1970 emp_growth1971 ... emp_growth1999->emp_growth
+avh_growth1970 avh_growth1971 ... avh_growth1999->avh_growth
+pl_c_growth1970 pl_c_growth1971 ... pl_c_growth1999->pl_c_growth
+xr_growth1970 xr_growth1971 ... xr_growth1999->xr_growth
+csh_g_growth1970 csh_g_growth1971 ... csh_g_growth1999->csh_g_growth
+ag_tractor1970 ag_tractor1971 ... ag_tractor1999->ag_tractor
+ag_tractor_growth1970 ag_tractor_growth1971 ... ag_tractor_growth1999->ag_tractor_growth
+            atm1970 atm1971 ... atm1999   ->   atm
+atm_growth1970 atm_growth1971 ... atm_growth1999->atm_growth
+computer1970 computer1971 ... computer1999->   computer
+computer_growth1970 computer_growth1971 ... computer_growth1999->computer_growth
+newspaper1970 newspaper1971 ... newspaper1999->newspaper
+newspaper_growth1970 newspaper_growth1971 ... newspaper_growth1999->newspaper_growth
+transplant_kidney1970 transplant_kidney1971 ... transplant_kidney1999->transplant_kidney
+transplant_kidney_growth1970 transplant_kidney_growth1971 ... transplant_kidney_growth1999->transplant_ki
+> dney_growth
+vehicle_car1970 vehicle_car1971 ... vehicle_car1999->vehicle_car
+vehicle_car_growth1970 vehicle_car_growth1971 ... vehicle_car_growth1999->vehicle_car_growth
+-----------------------------------------------------------------------------
+
+. 
+. // Generate binary for whether a country is developed
+. gen developed = country == "France" | country == "Germany" | country == "Italy" | country == "Japan" |c
+> ountry ==  "United Kingdom" | country == "United States", after(year)
+
+. 
+. save master_data, replace
+file master_data.dta saved
+
+. 
+. // Analysis part 1 - Growth Rates
+. 
+. // Controls as growth rates:
+. // All Tech  + controls 
+. reg gdp_per_cap_growth ag_tractor_growth atm_growth computer_growth newspaper_growth transplant_kidney_
+> growth vehicle_car_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth // Newspaper signifi
+> cant
+
+      Source |       SS           df       MS      Number of obs   =       160
+-------------+----------------------------------   F(11, 148)      =     10.08
+       Model |  675.436278        11   61.403298   Prob > F        =    0.0000
+    Residual |  901.258041       148  6.08958136   R-squared       =    0.4284
+-------------+----------------------------------   Adj R-squared   =    0.3859
+       Total |  1576.69432       159  9.91631647   Root MSE        =    2.4677
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |   .0386103   .0788288     0.49   0.625     -.117165    .1943857
+              atm_growth |  -.0036443   .0087311    -0.42   0.677    -.0208981    .0136095
+         computer_growth |   .0015508   .0239228     0.06   0.948    -.0457236    .0488253
+        newspaper_growth |   .1669676   .0536498     3.11   0.002      .060949    .2729862
+transplant_kidney_growth |   .0150816   .0127627     1.18   0.239     -.010139    .0403022
+      vehicle_car_growth |  -.0005813   .0228243    -0.03   0.980    -.0456848    .0445222
+              emp_growth |   .9520172    .112456     8.47   0.000     .7297903    1.174244
+              avh_growth |   .2545747   .2180792     1.17   0.245    -.1763765     .685526
+             pl_c_growth |  -.0785144   .0315026    -2.49   0.014    -.1407673   -.0162615
+               xr_growth |  -.0797163    .014723    -5.41   0.000    -.1088107    -.050622
+            csh_g_growth |  -.1123678   .0588815    -1.91   0.058     -.228725    .0039893
+                   _cons |    3.35728   .4738574     7.08   0.000     2.420879     4.29368
+------------------------------------------------------------------------------------------
+
+. 
+. // Tech only
+. reg gdp_per_cap_growth ag_tractor_growth atm_growth computer_growth newspaper_growth transplant_kidney_
+> growth vehicle_car_growth // No significance
+
+      Source |       SS           df       MS      Number of obs   =       160
+-------------+----------------------------------   F(6, 153)       =      0.56
+       Model |  33.7769783         6  5.62949639   Prob > F        =    0.7630
+    Residual |  1542.91734       153  10.0844271   R-squared       =    0.0214
+-------------+----------------------------------   Adj R-squared   =   -0.0170
+       Total |  1576.69432       159  9.91631647   Root MSE        =    3.1756
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |  -.0597356   .0987479    -0.60   0.546    -.2548211    .1353498
+              atm_growth |   .0007871    .011132     0.07   0.944    -.0212052    .0227795
+         computer_growth |   .0225917   .0291141     0.78   0.439    -.0349259    .0801093
+        newspaper_growth |   .0824175   .0621126     1.33   0.187    -.0402915    .2051265
+transplant_kidney_growth |   .0147511   .0162305     0.91   0.365    -.0173137    .0468159
+      vehicle_car_growth |   .0032242   .0285983     0.11   0.910    -.0532744    .0597227
+                   _cons |   2.918478   .5874567     4.97   0.000     1.757904    4.079051
+------------------------------------------------------------------------------------------
+
+. 
+. // Tractor + controls
+. reg gdp_per_cap_growth ag_tractor_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth // Si
+> gnificant at 5% level, p = 0.023
+
+      Source |       SS           df       MS      Number of obs   =     1,346
+-------------+----------------------------------   F(6, 1339)      =     38.09
+       Model |   4296.6871         6  716.114516   Prob > F        =    0.0000
+    Residual |  25175.5955     1,339   18.801789   R-squared       =    0.1458
+-------------+----------------------------------   Adj R-squared   =    0.1420
+       Total |  29472.2826     1,345  21.9124778   Root MSE        =    4.3361
+
+-----------------------------------------------------------------------------------
+gdp_per_cap_gro~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+ag_tractor_growth |    .010481   .0045885     2.28   0.023     .0014796    .0194824
+       emp_growth |   .7434796   .0624315    11.91   0.000     .6210054    .8659538
+       avh_growth |    .275497   .0986197     2.79   0.005      .082031     .468963
+      pl_c_growth |   .0472415    .010474     4.51   0.000     .0266942    .0677888
+        xr_growth |  -.0018734    .000449    -4.17   0.000    -.0027541   -.0009926
+     csh_g_growth |   -.022267   .0142882    -1.56   0.119    -.0502967    .0057626
+            _cons |   2.356416   .1363548    17.28   0.000     2.088924    2.623908
+-----------------------------------------------------------------------------------
+
+. 
+. // ATM + controls
+. reg gdp_per_cap_growth atm_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth // Not signi
+> ficant
+
+      Source |       SS           df       MS      Number of obs   =       220
+-------------+----------------------------------   F(6, 213)       =     30.36
+       Model |  1383.66694         6  230.611157   Prob > F        =    0.0000
+    Residual |  1617.82137       213   7.5954055   R-squared       =    0.4610
+-------------+----------------------------------   Adj R-squared   =    0.4458
+       Total |  3001.48832       219  13.7054261   Root MSE        =     2.756
+
+------------------------------------------------------------------------------
+gdp_per_ca~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  atm_growth |  -.0031008   .0044319    -0.70   0.485    -.0118367    .0056351
+  emp_growth |    .975713   .1078854     9.04   0.000     .7630531    1.188373
+  avh_growth |   .1911131   .2049851     0.93   0.352    -.2129462    .5951723
+ pl_c_growth |  -.0178499   .0229411    -0.78   0.437    -.0630707    .0273708
+   xr_growth |  -.0310939   .0031319    -9.93   0.000    -.0372673   -.0249205
+csh_g_growth |  -.0116895   .0438722    -0.27   0.790    -.0981689    .0747899
+       _cons |   3.283983   .2207546    14.88   0.000      2.84884    3.719127
+------------------------------------------------------------------------------
+
+. 
+. // Computer + controls
+. reg gdp_per_cap_growth computer_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth // Not 
+> significant
+
+      Source |       SS           df       MS      Number of obs   =       533
+-------------+----------------------------------   F(6, 526)       =     18.38
+       Model |  2005.50783         6  334.251305   Prob > F        =    0.0000
+    Residual |  9563.18342       526  18.1809571   R-squared       =    0.1734
+-------------+----------------------------------   Adj R-squared   =    0.1639
+       Total |  11568.6913       532  21.7456603   Root MSE        =    4.2639
+
+---------------------------------------------------------------------------------
+gdp_per_cap_g~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+computer_growth |   .0070135   .0068917     1.02   0.309    -.0065251     .020552
+     emp_growth |   .8213733   .0968606     8.48   0.000     .6310922    1.011654
+     avh_growth |   .1886952   .1629059     1.16   0.247    -.1313308    .5087213
+    pl_c_growth |   .0641653   .0182375     3.52   0.000      .028338    .0999925
+      xr_growth |  -.0026572    .000707    -3.76   0.000    -.0040461   -.0012682
+   csh_g_growth |   .0982247   .0263797     3.72   0.000     .0464023    .1500472
+          _cons |   2.964814   .2647508    11.20   0.000     2.444715    3.484913
+---------------------------------------------------------------------------------
+
+. 
+. // Newspaper + controls
+. reg gdp_per_cap_growth newspaper_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth // Not
+>  significant
+
+      Source |       SS           df       MS      Number of obs   =     1,335
+-------------+----------------------------------   F(6, 1328)      =     37.96
+       Model |  4315.07591         6  719.179318   Prob > F        =    0.0000
+    Residual |   25162.829     1,328  18.9479134   R-squared       =    0.1464
+-------------+----------------------------------   Adj R-squared   =    0.1425
+       Total |  29477.9049     1,334    22.09738   Root MSE        =    4.3529
+
+----------------------------------------------------------------------------------
+gdp_per_cap_gr~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-----------------+----------------------------------------------------------------
+newspaper_growth |   .0183805    .014136     1.30   0.194    -.0093509    .0461119
+      emp_growth |   .7605742   .0633303    12.01   0.000     .6363358    .8848126
+      avh_growth |    .271779   .0998644     2.72   0.007     .0758697    .4676883
+     pl_c_growth |   .0459021   .0105289     4.36   0.000     .0252471    .0665571
+       xr_growth |  -.0018877   .0004508    -4.19   0.000    -.0027721   -.0010033
+    csh_g_growth |  -.0203731   .0149113    -1.37   0.172    -.0496254    .0088793
+           _cons |   2.405686   .1392504    17.28   0.000     2.132511     2.67886
+----------------------------------------------------------------------------------
+
+. 
+. // Kidney Transplant + controls
+. reg gdp_per_cap_growth transplant_kidney_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growt
+> h // Significant, p = 0.009
+
+      Source |       SS           df       MS      Number of obs   =       649
+-------------+----------------------------------   F(6, 642)       =     62.40
+       Model |  3174.38717         6  529.064528   Prob > F        =    0.0000
+    Residual |  5442.86394       642  8.47798121   R-squared       =    0.3684
+-------------+----------------------------------   Adj R-squared   =    0.3625
+       Total |   8617.2511       648   13.298227   Root MSE        =    2.9117
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+transplant_kidney_growth |   .0038959   .0014841     2.63   0.009     .0009817    .0068101
+              emp_growth |   .7372012   .0661789    11.14   0.000      .607248    .8671545
+              avh_growth |    .387996   .1077774     3.60   0.000     .1763572    .5996349
+             pl_c_growth |  -.0098418   .0134886    -0.73   0.466    -.0363289    .0166454
+               xr_growth |  -.0570998   .0083374    -6.85   0.000    -.0734717   -.0407279
+            csh_g_growth |  -.2091831   .0260331    -8.04   0.000    -.2603033   -.1580628
+                   _cons |   2.926814   .1563207    18.72   0.000     2.619852    3.233775
+------------------------------------------------------------------------------------------
+
+. 
+. // Car + controls
+. reg gdp_per_cap_growth vehicle_car_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth // S
+> ignificant, p < 0.001
+
+      Source |       SS           df       MS      Number of obs   =     1,219
+-------------+----------------------------------   F(6, 1212)      =     41.76
+       Model |  4656.97182         6  776.161971   Prob > F        =    0.0000
+    Residual |  22525.4262     1,212  18.5853351   R-squared       =    0.1713
+-------------+----------------------------------   Adj R-squared   =    0.1672
+       Total |   27182.398     1,218  22.3172397   Root MSE        =    4.3111
+
+------------------------------------------------------------------------------------
+gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+vehicle_car_growth |   .0761407   .0155877     4.88   0.000     .0455588    .1067225
+        emp_growth |   .7892302   .0655641    12.04   0.000     .6605985    .9178618
+        avh_growth |   .2797218   .1002293     2.79   0.005     .0830796    .4763641
+       pl_c_growth |   .0290822   .0114018     2.55   0.011     .0067128    .0514516
+         xr_growth |  -.0018197   .0004482    -4.06   0.000    -.0026991   -.0009404
+      csh_g_growth |  -.0285853   .0148239    -1.93   0.054    -.0576686    .0004981
+             _cons |   2.250054   .1678187    13.41   0.000     1.920807    2.579302
+------------------------------------------------------------------------------------
+
+. 
+. //Sig factors
+. reg gdp_per_cap_growth ag_tractor_growth newspaper_growth transplant_kidney_growth vehicle_car_growth e
+> mp_growth avh_growth pl_c_growth xr_growth csh_g_growth // all but tractor significant
+
+      Source |       SS           df       MS      Number of obs   =       585
+-------------+----------------------------------   F(9, 575)       =     35.27
+       Model |  2431.50722         9  270.167469   Prob > F        =    0.0000
+    Residual |  4404.81754       575  7.66055224   R-squared       =    0.3557
+-------------+----------------------------------   Adj R-squared   =    0.3456
+       Total |  6836.32475       584  11.7060355   Root MSE        =    2.7678
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |  -.0274653   .0209472    -1.31   0.190    -.0686077     .013677
+        newspaper_growth |   .0456988   .0225842     2.02   0.043     .0013411    .0900564
+transplant_kidney_growth |   .0075867   .0018312     4.14   0.000     .0039901    .0111834
+      vehicle_car_growth |   .0746872    .021279     3.51   0.000     .0328931    .1164813
+              emp_growth |    .602394   .0694807     8.67   0.000      .465927     .738861
+              avh_growth |   .4199322   .1053922     3.98   0.000     .2129315     .626933
+             pl_c_growth |  -.0209871   .0144623    -1.45   0.147    -.0493925    .0074184
+               xr_growth |  -.0621606   .0091019    -6.83   0.000    -.0800376   -.0442835
+            csh_g_growth |  -.1994312   .0267185    -7.46   0.000     -.251909   -.1469534
+                   _cons |   2.679419   .1663051    16.11   0.000     2.352779    3.006058
+------------------------------------------------------------------------------------------
+
+. 
+. 
+. // Analysis part 2 - Development
+. 
+. // All Tech  + controls 
+. reg gdp_per_cap_growth ag_tractor_growth atm_growth computer_growth newspaper_growth transplant_kidney_
+> growth vehicle_car_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if developed == 1 
+
+      Source |       SS           df       MS      Number of obs   =        49
+-------------+----------------------------------   F(11, 37)       =      3.49
+       Model |   138.55337        11  12.5957609   Prob > F        =    0.0021
+    Residual |  133.477761        37  3.60750705   R-squared       =    0.5093
+-------------+----------------------------------   Adj R-squared   =    0.3635
+       Total |  272.031131        48  5.66731524   Root MSE        =    1.8993
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |  -.0972608   .1624947    -0.60   0.553    -.4265063    .2319846
+              atm_growth |   .0252014   .0350646     0.72   0.477    -.0458461    .0962489
+         computer_growth |     .07833   .0410573     1.91   0.064      -.00486    .1615201
+        newspaper_growth |  -.0084041   .0873126    -0.10   0.924    -.1853162     .168508
+transplant_kidney_growth |   -.000284   .0205706    -0.01   0.989    -.0419641    .0413961
+      vehicle_car_growth |  -.0103027   .0681406    -0.15   0.881    -.1483687    .1277632
+              emp_growth |   .3581342   .2807907     1.28   0.210    -.2108017    .9270702
+              avh_growth |   .4096933    .467137     0.88   0.386    -.5368162    1.356203
+             pl_c_growth |  -.4460155   .1198199    -3.72   0.001    -.6887937   -.2032374
+               xr_growth |  -.4317546   .1221549    -3.53   0.001     -.679264   -.1842452
+            csh_g_growth |  -.2611081   .0866343    -3.01   0.005    -.4366458   -.0855704
+                   _cons |   2.347888   .7057423     3.33   0.002     .9179186    3.777858
+------------------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth ag_tractor_growth atm_growth computer_growth newspaper_growth transplant_kidney_
+> growth vehicle_car_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if developed == 0
+
+      Source |       SS           df       MS      Number of obs   =       111
+-------------+----------------------------------   F(11, 99)       =      8.11
+       Model |  607.148948        11  55.1953589   Prob > F        =    0.0000
+    Residual |  673.894348        99  6.80701362   R-squared       =    0.4739
+-------------+----------------------------------   Adj R-squared   =    0.4155
+       Total |   1281.0433       110  11.6458481   Root MSE        =     2.609
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |   .0791164   .0999903     0.79   0.431     -.119286    .2775189
+              atm_growth |  -.0093562   .0097015    -0.96   0.337     -.028606    .0098936
+         computer_growth |  -.0226339   .0315144    -0.72   0.474    -.0851653    .0398975
+        newspaper_growth |   .1904105    .070192     2.71   0.008     .0511344    .3296866
+transplant_kidney_growth |   .0311127   .0157591     1.97   0.051    -.0001568    .0623822
+      vehicle_car_growth |   .0027046   .0256194     0.11   0.916    -.0481298     .053539
+              emp_growth |   1.000954   .1355949     7.38   0.000     .7319041    1.270004
+              avh_growth |   .2573502   .2598124     0.99   0.324    -.2581739    .7728743
+             pl_c_growth |  -.0613176    .039378    -1.56   0.123    -.1394522     .016817
+               xr_growth |  -.0854634   .0165737    -5.16   0.000    -.1183491   -.0525776
+            csh_g_growth |  -.1142393   .0771788    -1.48   0.142    -.2673789    .0389002
+                   _cons |   4.026589   .6385626     6.31   0.000     2.759542    5.293636
+------------------------------------------------------------------------------------------
+
+. 
+. // Tech only
+. reg gdp_per_cap_growth ag_tractor_growth atm_growth computer_growth newspaper_growth transplant_kidney_
+> growth vehicle_car_growth if developed == 1 
+
+      Source |       SS           df       MS      Number of obs   =        49
+-------------+----------------------------------   F(6, 42)        =      0.41
+       Model |  15.0928348         6  2.51547247   Prob > F        =    0.8674
+    Residual |  256.938297        42  6.11757849   R-squared       =    0.0555
+-------------+----------------------------------   Adj R-squared   =   -0.0794
+       Total |  272.031131        48  5.66731524   Root MSE        =    2.4734
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |   .1502444   .1809128     0.83   0.411    -.2148523    .5153411
+              atm_growth |   .0106134   .0453119     0.23   0.816    -.0808296    .1020565
+         computer_growth |   .0307197   .0488732     0.63   0.533    -.0679105    .1293498
+        newspaper_growth |   .0821249   .1082601     0.76   0.452    -.1363528    .3006026
+transplant_kidney_growth |   -.004466   .0257459    -0.17   0.863    -.0564233    .0474914
+      vehicle_car_growth |   .0657447   .0831959     0.79   0.434    -.1021515    .2336408
+                   _cons |   2.124249   .8828475     2.41   0.021      .342591    3.905908
+------------------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth ag_tractor_growth atm_growth computer_growth newspaper_growth transplant_kidney_
+> growth vehicle_car_growth if developed == 0
+
+      Source |       SS           df       MS      Number of obs   =       111
+-------------+----------------------------------   F(6, 104)       =      0.52
+       Model |  37.3351277         6  6.22252128   Prob > F        =    0.7918
+    Residual |  1243.70817       104  11.9587324   R-squared       =    0.0291
+-------------+----------------------------------   Adj R-squared   =   -0.0269
+       Total |   1281.0433       110  11.6458481   Root MSE        =    3.4581
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+       ag_tractor_growth |  -.1303347    .128217    -1.02   0.312    -.3845939    .1239245
+              atm_growth |  -.0021089   .0125593    -0.17   0.867    -.0270144    .0227966
+         computer_growth |   .0072129   .0372117     0.19   0.847    -.0665793    .0810051
+        newspaper_growth |   .1066316   .0795923     1.34   0.183     -.051203    .2644662
+transplant_kidney_growth |   .0208694   .0204826     1.02   0.311    -.0197484    .0614871
+      vehicle_car_growth |    .004116   .0326596     0.13   0.900    -.0606493    .0688813
+                   _cons |    3.45169   .7777987     4.44   0.000     1.909286    4.994094
+------------------------------------------------------------------------------------------
+
+. 
+. // Tractor + controls
+. reg gdp_per_cap_growth ag_tractor_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if de
+> veloped == 1
+
+      Source |       SS           df       MS      Number of obs   =       174
+-------------+----------------------------------   F(6, 167)       =     16.57
+       Model |    555.1082         6  92.5180333   Prob > F        =    0.0000
+    Residual |  932.343056       167  5.58289255   R-squared       =    0.3732
+-------------+----------------------------------   Adj R-squared   =    0.3507
+       Total |  1487.45126       173  8.59798414   Root MSE        =    2.3628
+
+-----------------------------------------------------------------------------------
+gdp_per_cap_gro~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+ag_tractor_growth |   .0236727   .0284592     0.83   0.407    -.0325136     .079859
+       emp_growth |   .7278549    .175377     4.15   0.000     .3816132    1.074097
+       avh_growth |   .3168982   .2220415     1.43   0.155    -.1214719    .7552682
+      pl_c_growth |  -.0661093   .0371271    -1.78   0.077    -.1394083    .0071896
+        xr_growth |  -.1532123   .0370148    -4.14   0.000    -.2262895    -.080135
+     csh_g_growth |  -.1742438   .0552927    -3.15   0.002    -.2834066   -.0650809
+            _cons |   3.215884   .3058729    10.51   0.000     2.612008     3.81976
+-----------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth ag_tractor_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if de
+> veloped == 0
+
+      Source |       SS           df       MS      Number of obs   =     1,172
+-------------+----------------------------------   F(6, 1165)      =     31.78
+       Model |  3936.55653         6  656.092755   Prob > F        =    0.0000
+    Residual |  24048.1956     1,165   20.642228   R-squared       =    0.1407
+-------------+----------------------------------   Adj R-squared   =    0.1362
+       Total |  27984.7522     1,171  23.8981658   Root MSE        =    4.5434
+
+-----------------------------------------------------------------------------------
+gdp_per_cap_gro~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+ag_tractor_growth |   .0108019   .0048329     2.24   0.026     .0013198    .0202841
+       emp_growth |   .7367165   .0669706    11.00   0.000       .60532     .868113
+       avh_growth |   .2570199   .1073035     2.40   0.017     .0464902    .4675495
+      pl_c_growth |   .0457028   .0115896     3.94   0.000     .0229639    .0684416
+        xr_growth |  -.0018654   .0004711    -3.96   0.000    -.0027897   -.0009412
+     csh_g_growth |   -.017793   .0151464    -1.17   0.240    -.0475103    .0119242
+            _cons |   2.333851   .1520903    15.35   0.000     2.035449    2.632252
+-----------------------------------------------------------------------------------
+
+. 
+. // ATM + controls
+. reg gdp_per_cap_growth atm_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if developed
+>  == 1
+
+      Source |       SS           df       MS      Number of obs   =        57
+-------------+----------------------------------   F(6, 50)        =      7.50
+       Model |  147.371294         6  24.5618823   Prob > F        =    0.0000
+    Residual |  163.673655        50  3.27347311   R-squared       =    0.4738
+-------------+----------------------------------   Adj R-squared   =    0.4106
+       Total |  311.044949        56  5.55437409   Root MSE        =    1.8093
+
+------------------------------------------------------------------------------
+gdp_per_ca~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  atm_growth |   .0534689   .0285604     1.87   0.067    -.0038963    .1108341
+  emp_growth |   .5447156   .2202779     2.47   0.017     .1022745    .9871567
+  avh_growth |    .251431   .3908661     0.64   0.523    -.5336467    1.036509
+ pl_c_growth |  -.3616031   .0992284    -3.64   0.001    -.5609093    -.162297
+   xr_growth |  -.3452198   .0988576    -3.49   0.001    -.5437811   -.1466585
+csh_g_growth |  -.2307724   .0711966    -3.24   0.002    -.3737751   -.0877698
+       _cons |   2.931957   .4523679     6.48   0.000     2.023349    3.840565
+------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth atm_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if developed
+>  == 0
+
+      Source |       SS           df       MS      Number of obs   =       163
+-------------+----------------------------------   F(6, 156)       =     24.34
+       Model |  1291.83951         6  215.306585   Prob > F        =    0.0000
+    Residual |  1379.87053       156  8.84532388   R-squared       =    0.4835
+-------------+----------------------------------   Adj R-squared   =    0.4637
+       Total |  2671.71003       162  16.4920372   Root MSE        =    2.9741
+
+------------------------------------------------------------------------------
+gdp_per_ca~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+  atm_growth |  -.0038787   .0048736    -0.80   0.427    -.0135055    .0057481
+  emp_growth |   .9726154   .1274803     7.63   0.000     .7208051    1.224426
+  avh_growth |   .1882981   .2404532     0.78   0.435    -.2866661    .6632622
+ pl_c_growth |  -.0041809   .0280681    -0.15   0.882    -.0596235    .0512617
+   xr_growth |  -.0311107   .0033877    -9.18   0.000    -.0378025    -.024419
+csh_g_growth |    .024632   .0524247     0.47   0.639    -.0789218    .1281857
+       _cons |   3.495619   .2828538    12.36   0.000     2.936902    4.054337
+------------------------------------------------------------------------------
+
+. 
+. // Computer + controls
+. reg gdp_per_cap_growth computer_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if deve
+> loped == 1
+
+      Source |       SS           df       MS      Number of obs   =        81
+-------------+----------------------------------   F(6, 74)        =     10.69
+       Model |  233.031538         6  38.8385897   Prob > F        =    0.0000
+    Residual |  268.972742        74  3.63476678   R-squared       =    0.4642
+-------------+----------------------------------   Adj R-squared   =    0.4208
+       Total |   502.00428        80   6.2750535   Root MSE        =    1.9065
+
+---------------------------------------------------------------------------------
+gdp_per_cap_g~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+computer_growth |   .0078425   .0100819     0.78   0.439    -.0122462    .0279312
+     emp_growth |   .6564489   .1871632     3.51   0.001     .2835181     1.02938
+     avh_growth |   .3682581   .3108954     1.18   0.240    -.2512145    .9877307
+    pl_c_growth |   -.307488   .0753155    -4.08   0.000    -.4575575   -.1574185
+      xr_growth |  -.3476757   .0823776    -4.22   0.000    -.5118165   -.1835348
+   csh_g_growth |  -.2449116   .0648109    -3.78   0.000    -.3740501   -.1157732
+          _cons |   3.634858   .3716033     9.78   0.000     2.894422    4.375293
+---------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth computer_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if deve
+> loped == 0
+
+      Source |       SS           df       MS      Number of obs   =       452
+-------------+----------------------------------   F(6, 445)       =     15.86
+       Model |  1949.29162         6  324.881936   Prob > F        =    0.0000
+    Residual |  9116.02525       445    20.48545   R-squared       =    0.1762
+-------------+----------------------------------   Adj R-squared   =    0.1651
+       Total |  11065.3169       451  24.5350707   Root MSE        =    4.5261
+
+---------------------------------------------------------------------------------
+gdp_per_cap_g~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+computer_growth |   .0078246   .0077434     1.01   0.313    -.0073937    .0230428
+     emp_growth |   .8105757   .1062291     7.63   0.000     .6018028    1.019349
+     avh_growth |   .1785428   .1790304     1.00   0.319    -.1733073     .530393
+    pl_c_growth |   .0732721   .0207499     3.53   0.000      .032492    .1140521
+      xr_growth |  -.0027322   .0007525    -3.63   0.000    -.0042111   -.0012533
+   csh_g_growth |   .1089819   .0285244     3.82   0.000     .0529227    .1650411
+          _cons |   2.958255   .3061322     9.66   0.000      2.35661    3.559899
+---------------------------------------------------------------------------------
+
+. 
+. // Newspaper + controls
+. reg gdp_per_cap_growth newspaper_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if dev
+> eloped == 1
+
+      Source |       SS           df       MS      Number of obs   =       174
+-------------+----------------------------------   F(6, 167)       =     16.44
+       Model |  552.424795         6  92.0707991   Prob > F        =    0.0000
+    Residual |  935.026461       167  5.59896085   R-squared       =    0.3714
+-------------+----------------------------------   Adj R-squared   =    0.3488
+       Total |  1487.45126       173  8.59798414   Root MSE        =    2.3662
+
+----------------------------------------------------------------------------------
+gdp_per_cap_gr~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-----------------+----------------------------------------------------------------
+newspaper_growth |   .0208838   .0455014     0.46   0.647    -.0689483    .1107159
+      emp_growth |    .722008   .1754278     4.12   0.000     .3756661     1.06835
+      avh_growth |   .3023974   .2219584     1.36   0.175    -.1358085    .7406034
+     pl_c_growth |  -.0557707   .0357517    -1.56   0.121    -.1263541    .0148128
+       xr_growth |  -.1436623   .0360852    -3.98   0.000    -.2149044   -.0724203
+    csh_g_growth |  -.1746335   .0553739    -3.15   0.002    -.2839565   -.0653106
+           _cons |   3.184705   .3068295    10.38   0.000     2.578941     3.79047
+----------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth newspaper_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if dev
+> eloped == 0
+
+      Source |       SS           df       MS      Number of obs   =     1,161
+-------------+----------------------------------   F(6, 1154)      =     31.56
+       Model |  3945.82338         6   657.63723   Prob > F        =    0.0000
+    Residual |  24043.1458     1,154   20.834615   R-squared       =    0.1410
+-------------+----------------------------------   Adj R-squared   =    0.1365
+       Total |  27988.9691     1,160  24.1284217   Root MSE        =    4.5645
+
+----------------------------------------------------------------------------------
+gdp_per_cap_gr~h | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-----------------+----------------------------------------------------------------
+newspaper_growth |    .018242   .0150959     1.21   0.227    -.0113764    .0478604
+      emp_growth |   .7551631    .068028    11.10   0.000     .6216907    .8886355
+      avh_growth |   .2528912   .1087754     2.32   0.020     .0394714    .4663109
+     pl_c_growth |   .0441621   .0116619     3.79   0.000     .0212812    .0670431
+       xr_growth |  -.0018834   .0004734    -3.98   0.000    -.0028123   -.0009546
+    csh_g_growth |  -.0157217   .0158317    -0.99   0.321    -.0467839    .0153404
+           _cons |   2.389987   .1559793    15.32   0.000     2.083952    2.696022
+----------------------------------------------------------------------------------
+
+. 
+. // Kidney Transplant + controls
+. reg gdp_per_cap_growth transplant_kidney_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growt
+> h if developed == 1
+
+      Source |       SS           df       MS      Number of obs   =       169
+-------------+----------------------------------   F(6, 162)       =     16.46
+       Model |  547.094605         6  91.1824341   Prob > F        =    0.0000
+    Residual |  897.505671       162  5.54015846   R-squared       =    0.3787
+-------------+----------------------------------   Adj R-squared   =    0.3557
+       Total |  1444.60028       168  8.59881116   Root MSE        =    2.3538
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+transplant_kidney_growth |    .005456    .007992     0.68   0.496    -.0103259    .0212379
+              emp_growth |    .768542   .1786594     4.30   0.000     .4157405    1.121344
+              avh_growth |   .2553499   .2223356     1.15   0.252    -.1836996    .6943995
+             pl_c_growth |  -.0583556    .036353    -1.61   0.110    -.1301424    .0134311
+               xr_growth |  -.1448676   .0363004    -3.99   0.000    -.2165506   -.0731847
+            csh_g_growth |  -.1778477   .0558746    -3.18   0.002    -.2881842   -.0675113
+                   _cons |   3.120489   .3085456    10.11   0.000     2.511199    3.729779
+------------------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth transplant_kidney_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growt
+> h if developed == 0
+
+      Source |       SS           df       MS      Number of obs   =       480
+-------------+----------------------------------   F(6, 473)       =     47.02
+       Model |  2677.95962         6  446.326603   Prob > F        =    0.0000
+    Residual |  4490.13905       473  9.49289439   R-squared       =    0.3736
+-------------+----------------------------------   Adj R-squared   =    0.3656
+       Total |  7168.09866       479  14.9647154   Root MSE        =    3.0811
+
+------------------------------------------------------------------------------------------
+      gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------------+----------------------------------------------------------------
+transplant_kidney_growth |   .0039244   .0015899     2.47   0.014     .0008003    .0070485
+              emp_growth |   .7333698   .0737588     9.94   0.000     .5884343    .8783053
+              avh_growth |   .3958349   .1259419     3.14   0.002     .1483601    .6433098
+             pl_c_growth |  -.0159137   .0159423    -1.00   0.319    -.0472403    .0154129
+               xr_growth |  -.0546588   .0091019    -6.01   0.000    -.0725439   -.0367737
+            csh_g_growth |  -.2148968   .0298439    -7.20   0.000    -.2735397   -.1562538
+                   _cons |   2.962136   .1900811    15.58   0.000     2.588628    3.335644
+------------------------------------------------------------------------------------------
+
+. 
+. // Car + controls
+. reg gdp_per_cap_growth vehicle_car_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if d
+> eveloped == 1
+
+      Source |       SS           df       MS      Number of obs   =       164
+-------------+----------------------------------   F(6, 157)       =     18.55
+       Model |  588.759658         6  98.1266097   Prob > F        =    0.0000
+    Residual |  830.522879       157  5.28995464   R-squared       =    0.4148
+-------------+----------------------------------   Adj R-squared   =    0.3925
+       Total |  1419.28254       163  8.70725483   Root MSE        =       2.3
+
+------------------------------------------------------------------------------------
+gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+vehicle_car_growth |   .1379988   .0418084     3.30   0.001     .0554193    .2205783
+        emp_growth |   .6387537     .17492     3.65   0.000     .2932535    .9842539
+        avh_growth |   .2579416   .2179013     1.18   0.238    -.1724548    .6883379
+       pl_c_growth |  -.0781912   .0370676    -2.11   0.036    -.1514066   -.0049757
+         xr_growth |  -.1599897   .0364436    -4.39   0.000    -.2319727   -.0880066
+      csh_g_growth |  -.1906884   .0557316    -3.42   0.001    -.3007689   -.0806078
+             _cons |   2.724186   .3515337     7.75   0.000      2.02984    3.418531
+------------------------------------------------------------------------------------
+
+. reg gdp_per_cap_growth vehicle_car_growth emp_growth avh_growth pl_c_growth xr_growth csh_g_growth if d
+> eveloped == 0
+
+      Source |       SS           df       MS      Number of obs   =     1,055
+-------------+----------------------------------   F(6, 1048)      =     34.70
+       Model |  4268.05374         6   711.34229   Prob > F        =    0.0000
+    Residual |   21482.881     1,048  20.4989322   R-squared       =    0.1657
+-------------+----------------------------------   Adj R-squared   =    0.1610
+       Total |  25750.9347     1,054  24.4316269   Root MSE        =    4.5276
+
+------------------------------------------------------------------------------------
+gdp_per_cap_growth | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+vehicle_car_growth |   .0747365   .0167947     4.45   0.000     .0417814    .1076916
+        emp_growth |   .7867598   .0705531    11.15   0.000     .6483185    .9252012
+        avh_growth |   .2631742   .1094075     2.41   0.016     .0484914    .4778569
+       pl_c_growth |   .0256855   .0127136     2.02   0.044     .0007385    .0506325
+         xr_growth |   -.001826   .0004715    -3.87   0.000    -.0027511   -.0009008
+      csh_g_growth |  -.0242616    .015766    -1.54   0.124    -.0551981    .0066748
+             _cons |   2.263893   .1887487    11.99   0.000     1.893525    2.634261
+------------------------------------------------------------------------------------
+
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  C:\Users\pem29\Box\ECON 388\Data Assignment 3\Data_Assignment_3.log
+  log type:  text
+ closed on:   6 Dec 2024, 11:46:10
+---------------------------------------------------------------------------------------------------------
