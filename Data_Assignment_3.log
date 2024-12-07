@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\pem29\Box\ECON 388\Data Assignment 3\Data_Assignment_3.log
   log type:  text
- opened on:   6 Dec 2024, 11:46:09
+ opened on:   6 Dec 2024, 13:46:23
 
 . 
 . // Data wrangling for tech progress data
@@ -111,6 +111,210 @@ file NBER_data.dta saved
 (38,609 observations deleted)
 
 . drop _m
+
+. 
+. // EDA
+. sum  ag_tractor atm computer newspaper transplant_kidney vehicle_car rgdpe pop emp avh pl_c xr csh_g, d
+> etail
+
+                         ag_tractor
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%           19              3
+ 5%           78              4
+10%          143              4       Obs               3,720
+25%         1500              4       Sum of wgt.       3,720
+
+50%       9434.5                      Mean           178935.8
+                        Largest       Std. dev.        552035
+75%       100256        5180000
+90%     411776.5        5205000       Variance       3.05e+11
+95%     938682.5        5235000       Skewness       5.974468
+99%      2649300        5270000       Kurtosis       46.16577
+
+                             atm
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%        28.84         22.608
+ 5%          151          24.91
+10%      342.507          28.84       Obs                 257
+25%         1081         66.848       Sum of wgt.         257
+
+50%         2797                      Mean           14631.93
+                        Largest       Std. dev.      30789.51
+75%     15973.71       141162.5
+90%     30488.13       167956.7       Variance       9.48e+08
+95%     83736.71       186753.2       Skewness       3.836054
+99%     167956.7       226859.5       Kurtosis       19.78326
+
+                          computer
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     399.8672       4.097402
+ 5%      5219.11       9.999806
+10%     10982.13       13.34784       Obs                 993
+25%     52042.64       49.99374       Sum of wgt.         993
+
+50%     300013.2                      Mean            2458270
+                        Largest       Std. dev.      1.00e+07
+75%      1213242       9.67e+07
+90%      4289219       1.09e+08       Variance       1.00e+14
+95%      8588731       1.24e+08       Skewness       8.844067
+99%     5.44e+07       1.41e+08       Kurtosis       95.02386
+
+                          newspaper
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%       1483.2              0
+10%       6001.4              0       Obs               3,518
+25%      58042.8              0       Sum of wgt.       3,518
+
+50%       326292                      Mean            3936853
+                        Largest       Std. dev.      1.30e+07
+75%      2100000       1.30e+08
+90%      6000000       1.30e+08       Variance       1.68e+14
+95%     1.90e+07       1.40e+08       Skewness       5.693111
+99%     6.90e+07       1.40e+08       Kurtosis       40.36545
+
+                      transplant_kidney
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              0
+ 5%            5              1
+10%           17              1       Obs                 749
+25%           79              1       Sum of wgt.         749
+
+50%          196                      Mean           625.5861
+                        Largest       Std. dev.      1546.273
+75%          441          11356
+90%         1492          11676       Variance        2390961
+95%         1972          12381       Skewness       5.293516
+99%         9726          12575       Kurtosis       33.56273
+
+                         vehicle_car
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%       2788.7         651.97
+ 5%         8000          933.6
+10%        13000         999.68       Obs               2,871
+25%        43000        1061.34       Sum of wgt.       2,871
+
+50%       251000                      Mean            3591826
+                        Largest       Std. dev.      1.52e+07
+75%      1580056       1.99e+08
+90%      6308000       2.00e+08       Variance       2.30e+14
+95%     1.55e+07       2.03e+08       Skewness       8.881396
+99%     9.27e+07       2.08e+08       Kurtosis       93.47274
+
+     Expenditure-side real GDP at chained PPPs (in mil.
+                          2017US$)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     843.8255       471.6869
+ 5%     2540.464       491.2193
+10%     4442.315       498.5883       Obs               3,831
+25%     10297.15       519.7693       Sum of wgt.       3,831
+
+50%     40858.75                      Mean           276797.1
+                        Largest       Std. dev.      907787.2
+75%     178795.7       1.17e+07
+90%     570521.6       1.23e+07       Variance       8.24e+11
+95%      1271643       1.29e+07       Skewness       8.121559
+99%      4385240       1.36e+07       Kurtosis       85.70855
+
+                  Population (in millions)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%      .228262        .122182
+ 5%      .689912        .124793
+10%     1.200526         .12715       Obs               3,831
+25%     3.464106        .129294       Sum of wgt.       3,831
+
+50%      8.13767                      Mean           35.39705
+                        Largest       Std. dev.      120.5768
+75%     23.35459       1251.636
+90%     59.72376       1261.996       Variance       14538.78
+95%     113.4577       1271.982       Skewness       7.392414
+99%     855.3347       1281.515       Kurtosis       61.92688
+
+           Number of persons engaged (in millions)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .1817125       .0432328
+ 5%     .2265371       .0447956
+10%        .2605       .0491785       Obs               3,646
+25%     .3104499       .0924285       Sum of wgt.       3,646
+
+50%     .3774684                      Mean           .3737199
+                        Largest       Std. dev.      .0869459
+75%     .4357362       .6137956
+90%     .4885371       .6166663       Variance       .0075596
+95%     .5111529       .6195369       Skewness      -.0955546
+99%     .5634546       .6224075       Kurtosis        2.73168
+
+       Average annual hours worked by persons engaged
+               (source: The Conference Board)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%      1471.17       1406.662
+ 5%     1554.063       1412.264
+10%     1649.981       1419.143       Obs               1,499
+25%     1806.887       1428.089       Sum of wgt.       1,499
+
+50%     1954.194                      Mean           2000.616
+                        Largest       Std. dev.      293.2206
+75%     2186.141       2907.892
+90%     2431.688       2913.085       Variance       85978.29
+95%     2523.705       2918.927       Skewness       .5907113
+99%     2878.315       2986.847       Kurtosis       3.214271
+
+     Price level of household consumption,  price level
+                    of USA GDPo in 2017=1
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .0601015       .0188029
+ 5%     .1004801       .0218877
+10%     .1281719       .0237733       Obs               3,831
+25%     .1885987       .0237862       Sum of wgt.       3,831
+
+50%     .2619614                      Mean           .3211633
+                        Largest       Std. dev.      .2027173
+75%       .39093       1.211462
+90%     .6160609       1.253783       Variance       .0410943
+95%     .7720686       1.262935       Skewness       1.558726
+99%     1.011125       1.324644       Kurtosis       5.543444
+
+            Exchange rate, national currency/USD
+                     (market+estimated)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     2.50e-10       1.67e-12
+ 5%        .0003       1.67e-12
+10%        .0125       1.99e-12       Obs               3,831
+25%     .8192622       2.29e-12       Sum of wgt.       3,831
+
+50%     2.981842                      Mean            136.321
+                        Largest       Std. dev.      687.1629
+75%     33.38587       11202.19
+90%     297.8482       11683.33       Variance       472192.8
+95%     555.2047          13268       Skewness          13.28
+99%     1963.019       13943.17       Kurtosis       212.7552
+
+       Share of government consumption at current PPPs
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .0247412       .0060728
+ 5%     .0658061       .0068682
+10%     .0814931       .0069751       Obs               3,831
+25%      .128268       .0070314       Sum of wgt.       3,831
+
+50%     .1754474                      Mean           .1970987
+                        Largest       Std. dev.      .1100034
+75%     .2421221        .746827
+90%     .3375155       .8050156       Variance       .0121007
+95%      .422632        .816219       Skewness       2.047331
+99%     .5431882       1.791706       Kurtosis        16.6514
 
 . 
 . //Expand values
@@ -1189,5 +1393,5 @@ vehicle_car_growth |   .0747365   .0167947     4.45   0.000     .0417814    .107
       name:  <unnamed>
        log:  C:\Users\pem29\Box\ECON 388\Data Assignment 3\Data_Assignment_3.log
   log type:  text
- closed on:   6 Dec 2024, 11:46:10
+ closed on:   6 Dec 2024, 13:46:25
 ---------------------------------------------------------------------------------------------------------

@@ -57,6 +57,9 @@ tab _m
 drop if _m != 3
 drop _m
 
+// EDA
+sum  ag_tractor atm computer newspaper transplant_kidney vehicle_car rgdpe pop emp avh pl_c xr csh_g, detail
+
 //Expand values
 reshape wide rgdpe pop gdp_per_cap emp avh pl_c xr csh_g ag_tractor atm computer newspaper transplant_kidney vehicle_car, i(country) j(year)
 
